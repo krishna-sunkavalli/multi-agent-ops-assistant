@@ -1,0 +1,23 @@
+# ──────────────────────────────────────────────────────────────────────
+# DEPRECATED: Use pyproject.toml for dependency management.
+# This file is retained only for backward compatibility with legacy
+# tooling. See pyproject.toml [project.dependencies] for the source
+# of truth.
+# ──────────────────────────────────────────────────────────────────────
+agent-framework-azure-ai==1.0.0rc2
+agent-framework-core==1.0.0rc2
+agent-framework-azure-ai-search==1.0.0b260225
+azure-ai-projects==2.0.0b3
+azure-ai-evaluation==1.15.3
+azure-ai-contentsafety==1.0.0
+azure-monitor-opentelemetry==1.8.5
+azure-identity==1.26.0b2
+openai==2.24.0
+azure-search-documents==11.7.0b2
+python-dotenv==1.2.1
+pyodbc==5.3.0
+pydantic==2.13.0b2
+pyyaml==6.0.3
+fastapi==0.134.0
+uvicorn[standard]==0.41.0
+websockets==16.0

@@ -1,0 +1,71 @@
+# Virtual environments
+.venv
+venv
+myenv
+
+# Environment files with secrets
+.env
+.env.local
+.env.*.local
+*.env
+
+# Azure
+.azure/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+eggs/
+*.egg
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node
+node_modules/
+
+# Logs
+*.log
+logs/
+
+# Keys and credentials
+*.pem
+*.key
+*.pfx
+*.p12
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Misc
+*.bak
+*.tmp
+
+# RAI evaluation results
+rai_results/
+**/rai_results/
+
+# Internal development files (not part of OSS release)
+_internal/
+shift-copilot-architecture.drawio
+shift-copilot-design.md
+ops-assistant-architecture.drawio
+ops-assistant-design.md
+reset_db.py
+prototype/
+docs/demo-guide.md
+docs/future-features.md
+docs/technical-details.md

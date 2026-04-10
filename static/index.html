@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShiftIQ</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%236366f1'/%3E%3Cstop offset='100%25' stop-color='%237c3aed'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Inter,system-ui,sans-serif' font-size='14' font-weight='800' fill='white'%3ESQ%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ================================================================
+   DESIGN TOKENS
+   ================================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --blue-50:  #eef2ff; --blue-100: #e0e7ff; --blue-200: #c7d2fe;
+  --blue-500: #6366f1; --blue-600: #4f46e5; --blue-700: #4338ca;
+  --blue-800: #3730a3; --blue-900: #312e81;
+  --green-50:  #ecfdf5; --green-100: #d1fae5;
+  --green-500: #10b981; --green-600: #059669; --green-700: #047857;
+  --amber-50:  #fffbeb; --amber-100: #fef3c7;
+  --amber-500: #f59e0b; --amber-600: #d97706;
+  --red-50:  #fef2f2; --red-100: #fee2e2;
+  --red-500: #ef4444; --red-600: #dc2626;
+  --gray-50:  #f8fafc; --gray-100: #f1f5f9; --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1; --gray-400: #94a3b8; --gray-500: #64748b;
+  --gray-600: #475569; --gray-700: #334155; --gray-800: #1e293b;
+  --gray-900: #0f172a;
+  --pink-400: #f472b6; --pink-500: #ec4899; --pink-600: #db2777;
+  --purple-400: #a78bfa; --purple-500: #8b5cf6; --purple-600: #7c3aed;
+  --radius: 8px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.04);
+  --shadow:    0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,.06), 0 2px 4px -2px rgba(0,0,0,.04);
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--gray-100);
+  color: var(--gray-800);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ================================================================
+   TOP NAVIGATION BAR
+   ================================================================ */
+.topbar {
+  background: #fff;
+  border-bottom: 1px solid var(--gray-200);
+  padding: 0 28px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+  z-index: 20;
+}
+.topbar-brand { display: flex; align-items: center; gap: 10px; }
+.topbar-logo {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, var(--blue-600), var(--purple-600));
+  border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 0.95rem; font-weight: 700;
+}
+.topbar-title-group {
+  display: flex; flex-direction: column; line-height: 1.15;
+}
+.topbar-title {
+  font-size: 1.3rem; font-weight: 800;
+  color: var(--gray-900); letter-spacing: -0.02em;
+}
+.topbar-subtitle {
+  font-size: 0.65rem; font-weight: 500;
+  color: var(--gray-500); letter-spacing: 0.02em;
+}
+.topbar-divider { width: 1px; height: 22px; background: var(--gray-200); }
+.store-info {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.8rem; color: var(--gray-600); font-weight: 500;
+}
+.store-id {
+  background: var(--gray-100); padding: 3px 10px; border-radius: 6px;
+  font-weight: 600; color: var(--gray-700); font-size: 0.75rem;
+  letter-spacing: 0.02em;
+}
+.status-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 0.68rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.status-pill.on-track { background: var(--green-100); color: var(--green-700); }
+.status-pill.behind   { background: var(--amber-100); color: var(--amber-600); }
+.status-pill.critical { background: var(--red-100);   color: var(--red-600); }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; }
+.status-pill.on-track .status-dot { background: var(--green-500); }
+.status-pill.behind .status-dot   { background: var(--amber-500); }
+.status-pill.critical .status-dot { background: var(--red-500); }
+
+.manager-tag {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.75rem; color: var(--gray-500); font-weight: 500;
+}
+.manager-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--blue-600); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.62rem; font-weight: 600;
+}
+
+.topbar-actions {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 14px;
+}
+
+/* Profile dropdown */
+.profile-dropdown {
+  position: relative;
+}
+.profile-trigger {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 10px 5px 5px;
+  border-radius: 10px; border: 1px solid transparent;
+  background: none; cursor: pointer;
+  transition: all .15s; font-family: inherit;
+}
+.profile-trigger:hover {
+  background: var(--gray-50); border-color: var(--gray-200);
+}
+.profile-trigger .manager-avatar {
+  width: 36px; height: 36px; font-size: 0.72rem;
+}
+.profile-name {
+  font-size: 0.8rem; font-weight: 600; color: var(--gray-800);
+  line-height: 1.2;
+}
+.profile-role {
+  font-size: 0.65rem; color: var(--gray-400); font-weight: 500;
+}
+.profile-chevron {
+  font-size: 0.6rem; color: var(--gray-400); margin-left: 2px;
+  transition: transform .2s;
+}
+.profile-dropdown.open .profile-chevron {
+  transform: rotate(180deg);
+}
+.profile-menu {
+  display: none; position: absolute;
+  top: calc(100% + 6px); right: 0;
+  background: #fff; border: 1px solid var(--gray-200);
+  border-radius: 10px; box-shadow: var(--shadow-md);
+  min-width: 200px; z-index: 50;
+  padding: 6px 0;
+  animation: menuIn .15s ease;
+}
+@keyframes menuIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.profile-dropdown.open .profile-menu { display: block; }
+.profile-menu-header {
+  padding: 10px 14px; border-bottom: 1px solid var(--gray-100);
+}
+.profile-menu-name {
+  font-size: 0.82rem; font-weight: 600; color: var(--gray-800);
+}
+.profile-menu-email {
+  font-size: 0.7rem; color: var(--gray-400); margin-top: 1px;
+}
+.profile-menu-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 14px; font-size: 0.78rem;
+  color: var(--gray-600); cursor: pointer;
+  transition: background .1s; border: none;
+  background: none; width: 100%; text-align: left;
+  font-family: inherit;
+}
+.profile-menu-item:hover { background: var(--gray-50); color: var(--gray-800); }
+.profile-menu-item .pm-icon { font-size: 0.85rem; width: 18px; text-align: center; }
+.profile-menu-divider {
+  height: 1px; background: var(--gray-100); margin: 4px 0;
+}
+.badge-foundry { display: none; }
+
+/* ================================================================
+   SHIFT TIMELINE BAR
+   ================================================================ */
+.shift-bar {
+  background: #fff;
+  border-bottom: 1px solid var(--gray-200);
+  padding: 0 24px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  color: var(--gray-500);
+  font-weight: 500;
+}
+.shift-label { white-space: nowrap; }
+.shift-track {
+  flex: 1; height: 6px; background: var(--gray-200);
+  border-radius: 3px; overflow: hidden; position: relative;
+  max-width: 260px;
+}
+.shift-fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--blue-500), var(--blue-600));
+  transition: width .5s ease;
+}
+.shift-time-left {
+  font-weight: 600; color: var(--gray-700);
+}
+.data-freshness {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 4px;
+  font-size: 0.66rem; color: var(--gray-400); font-weight: 500;
+}
+.freshness-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--green-500);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .4; }
+}
+
+/* ================================================================
+   MAIN LAYOUT
+   ================================================================ */
+.main-layout { flex: 1; display: flex; overflow: hidden; }
+
+/* ── Left Sidebar ── */
+.sidebar {
+  width: 330px; background: linear-gradient(180deg, #ffffff 0%, var(--gray-50) 100%);
+  border-right: 1px solid var(--gray-200);
+  display: flex; flex-direction: column;
+  overflow-y: auto; flex-shrink: 0;
+}
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 2px; }
+.sidebar-section {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--gray-100);
+}
+.sidebar-section:last-child { border-bottom: none; }
+.section-header {
+  font-size: 0.62rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--gray-500); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 7px;
+}
+.section-header::before {
+  content: ''; width: 3px; height: 14px;
+  background: linear-gradient(180deg, var(--blue-500), var(--purple-500));
+  border-radius: 2px; flex-shrink: 0;
+}
+
+/* ── KPI Cards ── */
+.kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.kpi-card {
+  background: #fff; border: 1px solid var(--gray-200);
+  border-radius: 10px; padding: 12px 14px;
+  transition: all .2s ease;
+  position: relative;
+  text-align: center;
+}
+.kpi-card:hover {
+  border-color: var(--gray-300);
+  box-shadow: 0 4px 12px rgba(0,0,0,.06);
+  transform: translateY(-1px);
+}
+.kpi-card.highlight-green {
+  background: linear-gradient(135deg, rgba(16,185,129,.05) 0%, rgba(5,150,105,.02) 100%);
+  border-color: rgba(16,185,129,.15);
+}
+.kpi-card.highlight-amber {
+  background: linear-gradient(135deg, rgba(245,158,11,.06) 0%, rgba(217,119,6,.02) 100%);
+  border-color: rgba(245,158,11,.15);
+}
+.kpi-card.highlight-red {
+  background: linear-gradient(135deg, rgba(239,68,68,.05) 0%, rgba(220,38,38,.02) 100%);
+  border-color: rgba(239,68,68,.15);
+}
+.kpi-card.highlight-blue  {
+  border-color: rgba(99,102,241,.15);
+}
+.kpi-card.highlight-slate {
+  background: linear-gradient(135deg, rgba(100,116,139,.05) 0%, rgba(71,85,105,.02) 100%);
+  border-color: rgba(100,116,139,.12);
+}
+.kpi-label {
+  font-size: 0.6rem; color: var(--gray-500); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px;
+}
+.kpi-value {
+  font-size: 1.25rem; font-weight: 800;
+  color: var(--gray-900); line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+.kpi-sub {
+  font-size: 0.6rem; color: var(--gray-400);
+  margin-top: 3px; font-weight: 400;
+}
+.kpi-value.green { color: var(--green-600); }
+.kpi-value.amber { color: var(--amber-600); }
+.kpi-value.red   { color: var(--red-600); }
+
+/* Revenue KPI - wide card */
+.kpi-wide {
+  grid-column: 1 / -1;
+  text-align: center;
+}
+.kpi-wide .kpi-right {
+  display: inline-block;
+  margin-top: 2px;
+}
+.kpi-trend {
+  font-size: 0.65rem; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 1px 6px; border-radius: 4px;
+}
+.kpi-trend.up   { color: var(--green-700); background: var(--green-50); }
+.kpi-trend.down { color: var(--red-600);   background: var(--red-50); }
+
+/* Revenue hero card */
+.kpi-card.kpi-wide.highlight-blue {
+  background: linear-gradient(135deg, #eef2ff 0%, #e8e0ff 50%, #f3e8ff 100%);
+  border: 1px solid rgba(139,92,246,.12);
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(99,102,241,.06);
+  border-radius: 10px;
+}
+.kpi-card.kpi-wide.highlight-blue:hover {
+  box-shadow: 0 4px 14px rgba(99,102,241,.1);
+  transform: translateY(-1px);
+}
+.kpi-card.kpi-wide.highlight-blue .kpi-label { color: var(--gray-500); font-weight: 600; }
+.kpi-card.kpi-wide.highlight-blue .kpi-value { color: var(--gray-900); font-size: 1.4rem; font-weight: 800; letter-spacing: -0.03em; }
+.kpi-card.kpi-wide.highlight-blue .kpi-sub { color: var(--gray-400); }
+.kpi-card.kpi-wide.highlight-blue .kpi-trend.up { background: rgba(16,185,129,.1); color: var(--green-700); }
+.kpi-card.kpi-wide.highlight-blue .kpi-trend.down { background: rgba(239,68,68,.1); color: var(--red-600); }
+
+/* ── Hourly Trend Sparkline ── */
+.sparkline-section { padding: 14px 16px 16px; border-bottom: 1px solid var(--gray-100); }
+.sparkline-wrap {
+  display: flex; align-items: flex-end; gap: 3px;
+  height: 76px; padding-top: 4px;
+  position: relative;
+}
+.sparkline-wrap::before {
+  content: ''; position: absolute; left: 0; right: 0;
+  bottom: 50%; height: 1px;
+  background: var(--gray-100); z-index: 0; pointer-events: none;
+}
+.spark-bar {
+  flex: 1; border-radius: 5px 5px 2px 2px;
+  min-width: 0;
+  position: relative; cursor: default;
+  z-index: 1;
+  transform-origin: bottom;
+  animation: barGrow .5s cubic-bezier(.4,0,.2,1) backwards;
+  transition: transform .15s ease, filter .15s ease;
+}
+.spark-bar:hover {
+  transform: scaleY(1.08) translateY(-1px);
+  filter: brightness(1.12);
+}
+.spark-bar.bar-blue {
+  background: linear-gradient(180deg, #a5b4fc, #818cf8);
+  box-shadow: none;
+}
+.spark-bar.bar-pink {
+  background: linear-gradient(180deg, #c4b5fd, #a78bfa);
+  box-shadow: none;
+}
+.spark-bar.bar-current {
+  background: linear-gradient(180deg, #818cf8, #6366f1);
+  box-shadow: 0 2px 6px rgba(99,102,241,.2);
+  animation: barGrow .5s cubic-bezier(.4,0,.2,1) backwards, pulseGlow 2s ease-in-out infinite;
+}
+.spark-bar.bar-future {
+  background: linear-gradient(180deg, var(--gray-200), var(--gray-300));
+  opacity: 0.45;
+}
+@keyframes barGrow {
+  from { transform: scaleY(0); }
+}
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 2px 6px rgba(99,102,241,.2); }
+  50% { box-shadow: 0 3px 10px rgba(99,102,241,.3); }
+}
+.spark-bar:hover::after {
+  content: attr(data-tip);
+  position: absolute; bottom: calc(100% + 6px); left: 50%;
+  transform: translateX(-50%);
+  background: var(--gray-800); color: #fff;
+  font-size: 0.62rem; padding: 3px 8px; border-radius: 6px;
+  white-space: nowrap; pointer-events: none; z-index: 5;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
+.sparkline-labels {
+  display: flex; justify-content: space-between;
+  font-size: 0.58rem; color: var(--gray-400); font-weight: 500;
+  margin-top: 4px; padding: 0 1px;
+}
+
+/* ── Order Mix + Channel Split ── */
+.mix-section { padding: 12px 16px; border-bottom: 1px solid var(--gray-100); }
+.mix-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 6px;
+}
+.mix-row:last-child { margin-bottom: 0; }
+.mix-label {
+  font-size: 0.68rem; font-weight: 500; color: var(--gray-600);
+  width: 52px; flex-shrink: 0;
+}
+.mix-bar-track {
+  flex: 1; height: 10px; background: var(--gray-100);
+  border-radius: 5px; overflow: hidden;
+}
+.mix-bar-fill {
+  height: 100%; border-radius: 4px;
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+}
+.mix-bar-fill.hot  { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.mix-bar-fill.cold { background: linear-gradient(90deg, var(--blue-500), var(--blue-200)); }
+.mix-bar-fill.food { background: linear-gradient(90deg, var(--purple-500), var(--purple-400)); }
+.mix-bar-fill.in-store { background: linear-gradient(90deg, var(--green-500), #34d399); }
+.mix-bar-fill.mobile   { background: linear-gradient(90deg, var(--blue-500), var(--purple-500)); }
+.mix-pct {
+  font-size: 0.68rem; font-weight: 600; color: var(--gray-700);
+  width: 36px; text-align: right; flex-shrink: 0;
+}
+.mix-count {
+  font-size: 0.62rem; color: var(--gray-400); width: 32px; flex-shrink: 0;
+}
+
+/* ── Station Health ── */
+.station-list { display: flex; flex-direction: column; gap: 8px; }
+.station-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px;
+  background: #fff; border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  transition: border-color .15s;
+  position: relative;
+}
+.station-row:hover {
+  border-color: var(--gray-300);
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+.station-row.alert-red { border-left: 3px solid var(--red-500); }
+.station-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem; font-weight: 600; color: #fff; flex-shrink: 0;
+  letter-spacing: -0.02em;
+  box-shadow: 0 2px 6px rgba(0,0,0,.1);
+}
+.station-icon.hot  { background: var(--amber-500); }
+.station-icon.cold { background: var(--blue-500); }
+.station-icon.food { background: var(--purple-500); }
+.station-info { flex: 1; min-width: 0; }
+.station-name-row {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 4px;
+}
+.station-name {
+  font-size: 0.74rem; font-weight: 600; color: var(--gray-800);
+}
+.station-alert-badge {
+  font-size: 0.55rem; font-weight: 700;
+  padding: 1px 6px; border-radius: 4px;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.station-alert-badge.overloaded { background: var(--red-100); color: var(--red-600); }
+.station-alert-badge.busy       { background: var(--amber-100); color: var(--amber-600); }
+.station-alert-badge.ok         { background: var(--green-100); color: var(--green-700); }
+.station-bar-track {
+  height: 6px; background: var(--gray-100);
+  border-radius: 4px; overflow: hidden;
+}
+.station-bar-fill {
+  height: 100%; border-radius: 4px;
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+}
+.station-bar-fill.green { background: linear-gradient(90deg, var(--green-500), #34d399); }
+.station-bar-fill.amber { background: linear-gradient(90deg, var(--amber-500), #fbbf24); }
+.station-bar-fill.red   { background: linear-gradient(90deg, var(--red-500), #f87171); }
+.station-detail {
+  font-size: 0.65rem; color: var(--gray-500); margin-top: 3px;
+  font-weight: 500;
+}
+.station-stats { text-align: right; white-space: nowrap; }
+.station-capacity { font-size: 0.82rem; font-weight: 700; }
+.station-capacity.green { color: var(--green-600); }
+.station-capacity.amber { color: var(--amber-600); }
+.station-capacity.red   { color: var(--red-600); }
+.station-staff {
+  font-size: 0.65rem; color: var(--gray-500); font-weight: 500;
+  margin-top: 2px;
+}
+
+/* ── Staff Roster ── */
+.staff-list { display: flex; flex-direction: column; gap: 2px; }
+.staff-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 8px; border-radius: 8px;
+  transition: background .1s;
+}
+.staff-row:hover { background: var(--gray-50); }
+.staff-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.staff-avatar.hot  { background: var(--amber-500); }
+.staff-avatar.cold { background: var(--blue-500); }
+.staff-avatar.food { background: var(--purple-500); }
+.staff-name {
+  flex: 1; font-size: 0.8rem; font-weight: 500; color: var(--gray-800);
+}
+.staff-station-tag {
+  font-size: 0.65rem; font-weight: 600;
+  padding: 2px 8px; border-radius: 5px; white-space: nowrap;
+}
+.staff-station-tag.hot  { background: var(--amber-50); color: var(--amber-600); }
+.staff-station-tag.cold { background: var(--blue-50); color: var(--blue-700); }
+.staff-station-tag.food { background: #f5f3ff; color: var(--purple-600); }
+.staff-count-badge {
+  font-size: 0.68rem; font-weight: 600; color: var(--gray-500);
+  background: var(--gray-100); padding: 2px 8px; border-radius: 10px;
+}
+
+/* ================================================================
+   CHAT PANEL
+   ================================================================ */
+.chat-panel {
+  flex: 1; display: flex; flex-direction: column;
+  min-width: 0; background: var(--gray-50);
+}
+.chat-area {
+  flex: 1; overflow-y: auto; padding: 24px 28px;
+  display: flex; flex-direction: column; gap: 16px;
+  scroll-behavior: smooth;
+}
+.chat-area::-webkit-scrollbar { width: 5px; }
+.chat-area::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
+
+/* Welcome card */
+.welcome-card {
+  align-self: center;
+  text-align: center;
+  padding: 36px 28px 28px;
+  max-width: 440px;
+  animation: msgIn .35s ease;
+}
+.welcome-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--blue-600), var(--purple-600));
+  color: #fff; font-size: 1.1rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 14px;
+  box-shadow: 0 4px 12px rgba(79,70,229,.2);
+}
+.welcome-title {
+  font-size: 1.1rem; font-weight: 700; color: var(--gray-900);
+  margin-bottom: 8px;
+}
+.welcome-sub {
+  font-size: 0.82rem; color: var(--gray-500); line-height: 1.55;
+}
+
+/* Messages */
+.message-row {
+  display: flex; gap: 10px; max-width: 72%;
+  animation: msgIn .25s ease;
+}
+.message-row.manager { align-self: flex-end; flex-direction: row-reverse; }
+.message-row.copilot { align-self: flex-start; }
+
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.msg-avatar {
+  width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.68rem; font-weight: 700; flex-shrink: 0; margin-top: 2px;
+}
+.copilot .msg-avatar {
+  background: linear-gradient(135deg, var(--blue-600), var(--purple-600));
+  color: #fff;
+}
+.manager .msg-avatar { background: var(--gray-700); color: #fff; }
+.msg-content { display: flex; flex-direction: column; }
+
+.bubble {
+  padding: 10px 14px; border-radius: 14px;
+  line-height: 1.65; font-size: 0.85rem;
+  word-break: break-word;
+}
+.bubble p { margin: 0 0 4px; }
+.bubble p:last-child { margin-bottom: 0; }
+.bubble ul, .bubble ol { margin: 4px 0 4px 18px; padding: 0; }
+.bubble li { margin: 2px 0; }
+.bubble strong { font-weight: 600; }
+
+.manager .bubble {
+  background: var(--blue-600); color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.copilot .bubble {
+  background: #fff; color: var(--gray-800);
+  border: 1px solid var(--gray-200);
+  border-bottom-left-radius: 4px;
+  box-shadow: var(--shadow-sm);
+}
+
+.msg-meta {
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 2px; margin-top: 4px;
+}
+.manager .msg-meta { justify-content: flex-end; }
+.msg-time { font-size: 0.63rem; color: var(--gray-400); font-weight: 500; }
+.agent-tag {
+  font-size: 0.63rem; font-weight: 600; color: var(--blue-600);
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.safety-tag {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 0.6rem; font-weight: 600;
+  padding: 1px 7px; border-radius: 8px;
+}
+.safety-tag.safe   { background: var(--green-100); color: var(--green-700); }
+.safety-tag.unsafe { background: var(--red-100);   color: var(--red-600); }
+.safety-tag.na     { background: var(--gray-100);  color: var(--gray-500); }
+
+/* Typing */
+.typing-indicator {
+  display: none; align-self: flex-start;
+  padding: 0 28px; align-items: center; gap: 10px;
+}
+.typing-indicator.visible { display: flex; }
+.typing-dots { display: flex; gap: 4px; }
+.typing-dots span {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--gray-400);
+  animation: bounce .6s infinite alternate;
+}
+.typing-dots span:nth-child(2) { animation-delay: .15s; }
+.typing-dots span:nth-child(3) { animation-delay: .3s; }
+@keyframes bounce { to { transform: translateY(-4px); opacity: .4; } }
+.typing-label { font-size: .75rem; color: var(--gray-500); font-weight: 500; }
+
+/* Quick Actions */
+.quick-actions {
+  display: flex; gap: 7px; padding: 10px 28px;
+  overflow-x: auto; flex-shrink: 0;
+  border-top: 1px solid var(--gray-200); background: #fff;
+}
+.quick-actions::-webkit-scrollbar { height: 0; }
+.quick-btn {
+  flex-shrink: 0; padding: 6px 13px; border-radius: 8px;
+  border: 1px solid var(--gray-200); background: #fff;
+  color: var(--gray-600); font-size: 0.75rem; font-weight: 500;
+  cursor: pointer; transition: all .15s; font-family: inherit;
+  white-space: nowrap;
+}
+.quick-btn:hover {
+  background: var(--blue-50); border-color: var(--blue-500);
+  color: var(--blue-700);
+}
+
+/* Input Bar */
+.input-bar {
+  display: flex; gap: 10px; padding: 12px 28px;
+  background: #fff; border-top: 1px solid var(--gray-200); flex-shrink: 0;
+}
+.input-bar input {
+  flex: 1; padding: 9px 16px; border-radius: 10px;
+  border: 1.5px solid var(--gray-300); font-size: 0.85rem;
+  outline: none; transition: border-color .15s, box-shadow .15s;
+  font-family: inherit; background: var(--gray-50);
+}
+.input-bar input:focus {
+  border-color: var(--blue-500);
+  box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+  background: #fff;
+}
+.input-bar input::placeholder { color: var(--gray-400); }
+.send-btn {
+  width: 38px; height: 38px; border-radius: 10px; border: none;
+  background: var(--blue-600); color: #fff; font-size: 1rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background .15s; flex-shrink: 0;
+}
+.send-btn:hover { background: var(--blue-700); }
+.send-btn:disabled { background: var(--gray-300); cursor: not-allowed; }
+.send-btn svg { width: 16px; height: 16px; }
+
+/* ================================================================
+   TOAST NOTIFICATIONS
+   ================================================================ */
+.toast-container {
+  position: fixed; top: 76px; right: 24px; z-index: 100;
+  display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  display: flex; align-items: flex-start; gap: 10px;
+  background: #fff; border: 1px solid var(--gray-200);
+  border-radius: var(--radius); padding: 12px 16px;
+  box-shadow: var(--shadow-md); min-width: 310px; max-width: 400px;
+  animation: toastIn .3s ease;
+  font-size: 0.8rem; color: var(--gray-700);
+}
+.toast.exiting { animation: toastOut .25s ease forwards; }
+@keyframes toastIn  { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes toastOut { from { opacity: 1; transform: translateX(0); }   to { opacity: 0; transform: translateX(30px); } }
+.toast-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+.toast-body  { flex: 1; }
+.toast-title { font-weight: 600; margin-bottom: 2px; }
+.toast-msg   { font-size: 0.75rem; color: var(--gray-500); }
+.toast-close {
+  background: none; border: none; cursor: pointer;
+  font-size: 1rem; color: var(--gray-400);
+  padding: 0; margin: -2px -4px 0 0; flex-shrink: 0;
+}
+.toast.warning { border-left: 3px solid var(--amber-500); }
+.toast.danger  { border-left: 3px solid var(--red-500); }
+.toast.success { border-left: 3px solid var(--green-500); }
+.toast.info    { border-left: 3px solid var(--blue-500); }
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .topbar  { padding: 0 14px; gap: 10px; }
+  .shift-bar { padding: 0 14px; }
+  .chat-area, .input-bar, .quick-actions { padding-left: 16px; padding-right: 16px; }
+  .topbar-divider, .badge-foundry, .manager-tag { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     TOP BAR
+     ════════════════════════════════════════ -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-logo">SQ</div>
+    <div class="topbar-title-group">
+      <span class="topbar-title">ShiftIQ</span>
+      <span class="topbar-subtitle">Powered by Microsoft Foundry</span>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <div class="profile-dropdown" id="profileDropdown">
+      <button class="profile-trigger" id="profileTrigger">
+        <div class="manager-avatar">AK</div>
+        <div>
+          <div class="profile-name">Alex K.</div>
+          <div class="profile-role">Shift Manager</div>
+        </div>
+        <span class="profile-chevron">&#9662;</span>
+      </button>
+      <div class="profile-menu">
+        <div class="profile-menu-header">
+          <div class="profile-menu-name">Alex Kowalski</div>
+          <div class="profile-menu-email">alex.k@contoso.com</div>
+          <span class="store-id" style="margin-top:6px;display:inline-block;">STORE-001</span>
+        </div>
+        <div class="profile-menu-divider"></div>
+        <button class="profile-menu-item"><span class="pm-icon">&#128100;</span> My Profile</button>
+        <button class="profile-menu-item"><span class="pm-icon">&#9881;</span> Settings</button>
+        <button class="profile-menu-item"><span class="pm-icon">&#128276;</span> Notifications</button>
+        <div class="profile-menu-divider"></div>
+        <button class="profile-menu-item"><span class="pm-icon">&#128682;</span> Sign Out</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     MAIN LAYOUT
+     ════════════════════════════════════════ -->
+<div class="main-layout">
+
+  <!-- ── LEFT SIDEBAR ── -->
+  <div class="sidebar">
+
+    <!-- KPIs -->
+    <div class="sidebar-section">
+      <div class="section-header">Performance Snapshot</div>
+      <div class="kpi-grid">
+        <!-- Revenue - wide card -->
+        <div class="kpi-card kpi-wide highlight-blue">
+            <div class="kpi-label">Est. Revenue (Today)</div>
+            <div class="kpi-value" id="kpiRevenue">—</div>
+            <div class="kpi-sub" id="kpiRevSub">loading…</div>
+            <span class="kpi-trend up" id="kpiRevTrend" style="display:none;"></span>
+        </div>
+        <div class="kpi-card highlight-green">
+          <div class="kpi-label">Orders / Hr</div>
+          <div class="kpi-value" id="kpiOrders">—</div>
+          <div class="kpi-sub" id="kpiOrdersSub">loading…</div>
+        </div>
+        <div class="kpi-card highlight-amber">
+          <div class="kpi-label">Avg Wait</div>
+          <div class="kpi-value" id="kpiWait">—</div>
+          <div class="kpi-sub" id="kpiWaitSub">loading…</div>
+        </div>
+        <div class="kpi-card highlight-green">
+          <div class="kpi-label">Pace vs Target</div>
+          <div class="kpi-value" id="kpiPace">—</div>
+          <div class="kpi-sub">of hourly target</div>
+        </div>
+        <div class="kpi-card highlight-slate">
+          <div class="kpi-label">Active Orders</div>
+          <div class="kpi-value" id="kpiActive">—</div>
+          <div class="kpi-sub">in progress</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hourly Trend Sparkline -->
+    <div class="sparkline-section">
+      <div class="section-header">Hourly Volume</div>
+      <div class="sparkline-wrap" id="sparkline"></div>
+      <div class="sparkline-labels">
+        <span>6am</span><span>9am</span><span>12pm</span><span>3pm</span><span>6pm</span><span>9pm</span>
+      </div>
+    </div>
+
+    <!-- Order Mix + Channel Split -->
+    <div class="mix-section" id="mixSection">
+      <div class="section-header">Order Mix</div>
+      <div class="mix-row">
+        <span class="mix-label">Hot</span>
+        <div class="mix-bar-track"><div class="mix-bar-fill hot" id="mixHotBar" style="width:0%"></div></div>
+        <span class="mix-pct" id="mixHotPct">—</span>
+        <span class="mix-count" id="mixHotCnt">0</span>
+      </div>
+      <div class="mix-row">
+        <span class="mix-label">Cold</span>
+        <div class="mix-bar-track"><div class="mix-bar-fill cold" id="mixColdBar" style="width:0%"></div></div>
+        <span class="mix-pct" id="mixColdPct">—</span>
+        <span class="mix-count" id="mixColdCnt">0</span>
+      </div>
+      <div class="mix-row">
+        <span class="mix-label">Food</span>
+        <div class="mix-bar-track"><div class="mix-bar-fill food" id="mixFoodBar" style="width:0%"></div></div>
+        <span class="mix-pct" id="mixFoodPct">—</span>
+        <span class="mix-count" id="mixFoodCnt">0</span>
+      </div>
+
+      <div class="section-header" style="margin-top:14px;">Channel Split</div>
+      <div class="mix-row">
+        <span class="mix-label">In-store</span>
+        <div class="mix-bar-track"><div class="mix-bar-fill in-store" id="chInStoreBar" style="width:0%"></div></div>
+        <span class="mix-pct" id="chInStorePct">—</span>
+        <span class="mix-count" id="chInStoreCnt">0</span>
+      </div>
+      <div class="mix-row">
+        <span class="mix-label">Mobile</span>
+        <div class="mix-bar-track"><div class="mix-bar-fill mobile" id="chMobileBar" style="width:0%"></div></div>
+        <span class="mix-pct" id="chMobilePct">—</span>
+        <span class="mix-count" id="chMobileCnt">0</span>
+      </div>
+    </div>
+
+    <!-- Station Health -->
+    <div class="sidebar-section">
+      <div class="section-header">Station Health</div>
+      <div class="station-list" id="stationList">
+        <div style="text-align:center;color:var(--gray-400);font-size:0.75rem;padding:12px;">Loading…</div>
+      </div>
+    </div>
+
+    <!-- Staff Roster -->
+    <div class="sidebar-section">
+      <div class="section-header">
+        Team on Floor
+        <span class="staff-count-badge" id="staffCountBadge">0</span>
+      </div>
+      <div class="staff-list" id="staffList">
+        <div style="text-align:center;color:var(--gray-400);font-size:0.75rem;padding:12px;">Loading…</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── CHAT PANEL ── -->
+  <div class="chat-panel">
+    <div class="chat-area" id="chatArea">
+      <div class="welcome-card">
+        <div class="welcome-icon">SQ</div>
+        <div class="welcome-title">Welcome to ShiftIQ</div>
+        <div class="welcome-sub">
+          Your AI-powered assistant for store operations — powered by Microsoft Foundry. Ask about performance, staffing, or forecasts.
+        </div>
+      </div>
+    </div>
+
+    <div class="typing-indicator" id="typingIndicator">
+      <div class="typing-dots"><span></span><span></span><span></span></div>
+      <span class="typing-label">Agent is thinking...</span>
+    </div>
+
+    <div class="quick-actions" id="quickActions">
+      <button class="quick-btn" data-msg="How are we doing?">How are we doing?</button>
+      <button class="quick-btn" data-msg="Why is cold bar over capacity?">Why is cold bar over capacity?</button>
+      <button class="quick-btn" data-msg="Move Emma to cold bar">Move Emma to cold bar</button>
+      <button class="quick-btn" data-msg="Should I start batch prep?">Should I start batch prep?</button>
+      <button class="quick-btn" data-msg="What's the staffing plan?">What's the staffing plan?</button>
+      <button class="quick-btn" data-msg="Show me the sales breakdown">Sales breakdown</button>
+    </div>
+
+    <div class="input-bar">
+      <input type="text" id="msgInput" placeholder="Ask about your shift..." autocomplete="off" />
+      <button class="send-btn" id="sendBtn" title="Send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ════════════════════════════════════════
+     PRODUCTION JAVASCRIPT — WebSocket chat + live dashboard
+     ════════════════════════════════════════ -->
+<script>
+(function() {
+  /* ── DOM refs ── */
+  var chatArea  = document.getElementById('chatArea');
+  var msgInput  = document.getElementById('msgInput');
+  var sendBtn   = document.getElementById('sendBtn');
+  var typingEl  = document.getElementById('typingIndicator');
+  var toastBox  = document.getElementById('toastContainer');
+
+  var ws = null;
+  var isWaiting = false;
+  var currentBubble = null;
+  var currentRawText = '';
+  var currentAgentName = null;
+  var currentSafety = null;
+  var reconnectTimer = null;
+  var dashboardTimer = null;
+
+  var wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  var WS_URL  = wsProto + '//' + location.host + '/ws';
+
+  /* ================================================================
+     HELPERS
+     ================================================================ */
+  function ts() {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  function scrollBottom() {
+    requestAnimationFrame(function() { chatArea.scrollTop = chatArea.scrollHeight; });
+  }
+  function setWaiting(v) {
+    isWaiting = v;
+    sendBtn.disabled = v;
+    msgInput.disabled = v;
+    typingEl.classList.toggle('visible', v);
+    if (!v) msgInput.focus();
+  }
+
+  /* ── Markdown renderer ── */
+  function renderMarkdown(text) {
+    var s = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    var lines = s.split('\n'), html = '', inList = false;
+    for (var i = 0; i < lines.length; i++) {
+      var m = lines[i].match(/^\s*[\u2022\-\*]\s+(.*)/);
+      if (m) { if (!inList) { html += '<ul>'; inList = true; } html += '<li>' + m[1] + '</li>'; }
+      else { if (inList) { html += '</ul>'; inList = false; }
+        html += lines[i].trim() ? '<p>' + lines[i] + '</p>' : '<br>'; }
+    }
+    if (inList) html += '</ul>';
+    return html;
+  }
+
+  /* ── Toast notifications ── */
+  function showToast(type, title, msg) {
+    var icons = { warning:'\u26a0\ufe0f', danger:'\ud83d\udd34', success:'\u2705', info:'\u2139\ufe0f' };
+    var t = document.createElement('div');
+    t.className = 'toast ' + type;
+    t.innerHTML =
+      '<span class="toast-icon">' + (icons[type] || '') + '</span>' +
+      '<div class="toast-body"><div class="toast-title">' + title + '</div>' +
+      '<div class="toast-msg">' + msg + '</div></div>' +
+      '<button class="toast-close" onclick="this.parentElement.remove()">&times;</button>';
+    toastBox.appendChild(t);
+    setTimeout(function() { t.classList.add('exiting'); setTimeout(function() { t.remove(); }, 300); }, 5000);
+  }
+
+  /* ================================================================
+     CHAT — Add messages
+     ================================================================ */
+  function addMessage(text, role) {
+    var row = document.createElement('div');
+    row.className = 'message-row ' + role;
+    var avatar = document.createElement('div');
+    avatar.className = 'msg-avatar';
+    avatar.textContent = role === 'copilot' ? 'AI' : 'M';
+    var col = document.createElement('div');
+    col.className = 'msg-content';
+    var bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.innerHTML = renderMarkdown(text);
+    var meta = document.createElement('div');
+    meta.className = 'msg-meta';
+    meta.innerHTML = '<span class="msg-time">' + ts() + '</span>';
+    col.appendChild(bubble);
+    col.appendChild(meta);
+    row.appendChild(avatar);
+    row.appendChild(col);
+    chatArea.appendChild(row);
+    scrollBottom();
+    return bubble;
+  }
+
+  function startCopilotMessage(agentName, safety) {
+    var row = document.createElement('div');
+    row.className = 'message-row copilot';
+    var avatar = document.createElement('div');
+    avatar.className = 'msg-avatar';
+    avatar.textContent = 'AI';
+    var col = document.createElement('div');
+    col.className = 'msg-content';
+
+    /* Agent + Safety badges */
+    if (agentName) {
+      var metaTop = document.createElement('div');
+      metaTop.style.cssText = 'display:flex;align-items:center;gap:6px;margin-bottom:3px;';
+      var tag = document.createElement('span');
+      tag.className = 'agent-tag';
+      tag.textContent = agentName;
+      metaTop.appendChild(tag);
+
+      if (safety && safety.available) {
+        var allSafe = safety.input_safe && safety.output_safe;
+        var st = document.createElement('span');
+        st.className = 'safety-tag ' + (allSafe ? 'safe' : 'unsafe');
+        st.textContent = allSafe ? '\u2713 Safe' : '\u26a0 Flagged';
+        if (safety.categories) {
+          var cats = Object.entries(safety.categories).map(function(e) { return e[0] + ':' + e[1]; }).join(', ');
+          st.title = 'Content Safety: ' + cats;
+        }
+        metaTop.appendChild(st);
+      } else if (safety && !safety.available) {
+        var naBadge = document.createElement('span');
+        naBadge.className = 'safety-tag na';
+        naBadge.textContent = '\ud83d\udee1 Guard';
+        naBadge.title = 'Content Safety: service not configured';
+        metaTop.appendChild(naBadge);
+      }
+      col.appendChild(metaTop);
+    }
+
+    var bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    var meta = document.createElement('div');
+    meta.className = 'msg-meta';
+    meta.innerHTML = '<span class="msg-time">' + ts() + '</span>';
+    col.appendChild(bubble);
+    col.appendChild(meta);
+    row.appendChild(avatar);
+    row.appendChild(col);
+    chatArea.appendChild(row);
+    scrollBottom();
+    return bubble;
+  }
+
+  /* ================================================================
+     WEBSOCKET
+     ================================================================ */
+  function connect() {
+    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
+    ws = new WebSocket(WS_URL);
+
+    ws.onopen = function() {
+      if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+    };
+
+    ws.onmessage = function(e) {
+      var data = e.data;
+
+      if (data === '[DONE]') {
+        if (currentBubble && currentRawText) {
+          /* Strip any [FOLLOWUP:...] marker that arrived during streaming */
+          var clean = currentRawText.replace(/\[FOLLOWUP:\s*\[[\s\S]*?\]\s*\]/, '').trimEnd();
+          currentBubble.innerHTML = renderMarkdown(clean);
+        }
+        currentBubble = null;
+        currentRawText = '';
+        currentAgentName = null;
+        currentSafety = null;
+        setWaiting(false);
+        /* Refresh dashboard after every response (staff moves, etc.) */
+        fetchDashboard();
+        return;
+      }
+
+      if (data.indexOf('[AGENT:') === 0) {
+        currentAgentName = data.slice(7, -1);
+        return;
+      }
+
+      if (data.indexOf('[SAFETY:') === 0) {
+        try { currentSafety = JSON.parse(data.slice(8, -1)); }
+        catch(ex) { currentSafety = null; }
+        return;
+      }
+
+      if (data.indexOf('[SUGGESTIONS:') === 0) {
+        try {
+          var suggestions = JSON.parse(data.slice(13, -1));
+          if (Array.isArray(suggestions) && suggestions.length > 0) {
+            var container = document.getElementById('quickActions');
+            container.innerHTML = '';
+            suggestions.forEach(function(s) {
+              var btn = document.createElement('button');
+              btn.className = 'quick-btn';
+              btn.textContent = s;
+              btn.setAttribute('data-msg', s);
+              btn.addEventListener('click', function() {
+                if (!isWaiting) sendMessage(btn.textContent);
+              });
+              container.appendChild(btn);
+            });
+          }
+        } catch(ex) { /* ignore */ }
+        return;
+      }
+
+      /* Streaming text chunk */
+      if (!currentBubble) {
+        currentBubble = startCopilotMessage(currentAgentName, currentSafety);
+        currentRawText = '';
+        typingEl.classList.remove('visible');
+      }
+      currentRawText += data;
+      currentBubble.textContent = currentRawText;
+      scrollBottom();
+    };
+
+    ws.onclose = function() {
+      if (!reconnectTimer) {
+        reconnectTimer = setTimeout(function() { reconnectTimer = null; connect(); }, 3000);
+      }
+    };
+
+    ws.onerror = function() { ws.close(); };
+  }
+
+  function sendMessage(text) {
+    if (!text.trim() || isWaiting) return;
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      addMessage('Connection lost. Reconnecting...', 'copilot');
+      connect();
+      return;
+    }
+    addMessage(text, 'manager');
+    setWaiting(true);
+    ws.send(text);
+    msgInput.value = '';
+  }
+
+  /* ================================================================
+     DASHBOARD — fetch sidebar data from /api/dashboard
+     ================================================================ */
+  function fetchDashboard() {
+    fetch('/api/dashboard').then(function(r) { return r.json(); })
+      .then(function(d) { applyDashboard(d); })
+      .catch(function(err) { console.warn('Dashboard fetch failed, using demo data:', err); applyDashboard(getMockDashboard()); });
+  }
+
+  function fmtWait(secs) {
+    var m = Math.floor(secs / 60);
+    var s = secs % 60;
+    return m + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  function applyDashboard(d) {
+    var k = d.kpis;
+    /* KPI cards */
+    document.getElementById('kpiRevenue').textContent = '$' + Number(k.est_revenue).toLocaleString();
+    document.getElementById('kpiRevSub').textContent = k.total_orders_today + ' orders \u00d7 $' + k.avg_ticket.toFixed(2) + ' avg';
+    document.getElementById('kpiOrders').textContent = k.orders_hr;
+    document.getElementById('kpiOrdersSub').textContent = 'target: ' + k.target_hr;
+    var waitEl = document.getElementById('kpiWait');
+    waitEl.textContent = fmtWait(k.avg_wait_secs);
+    waitEl.className = 'kpi-value' + (k.avg_wait_secs > 240 ? ' red' : k.avg_wait_secs > 180 ? ' amber' : '');
+    var waitSub = document.getElementById('kpiWaitSub');
+    waitSub.textContent = k.avg_wait_secs > 180 ? 'above threshold' : 'within target';
+    document.getElementById('kpiPace').textContent = k.pace_pct + '%';
+    var paceEl = document.getElementById('kpiPace');
+    paceEl.className = 'kpi-value' + (k.pace_pct >= 100 ? ' green' : k.pace_pct >= 80 ? '' : ' red');
+    document.getElementById('kpiActive').textContent = k.active_orders;
+
+    /* Order mix */
+    var om = d.order_mix;
+    setMixRow('Hot',  om.hot,  'mixHot');
+    setMixRow('Cold', om.cold, 'mixCold');
+    setMixRow('Food', om.food, 'mixFood');
+
+    /* Channel split */
+    var ch = d.channel_split;
+    setChRow('In-store', ch.in_store, 'chInStore');
+    setChRow('Mobile',   ch.mobile,   'chMobile');
+
+    /* Sparkline */
+    buildSparkline(d.hourly_volume);
+
+    /* Stations */
+    renderStations(d.stations);
+
+    /* Staff */
+    renderStaff(d.staff);
+  }
+
+  function setMixRow(lbl, data, prefix) {
+    if (!data) return;
+    var bar = document.getElementById(prefix + 'Bar');
+    var pct = document.getElementById(prefix + 'Pct');
+    var cnt = document.getElementById(prefix + 'Cnt');
+    if (bar) bar.style.width = data.pct + '%';
+    if (pct) pct.textContent = data.pct + '%';
+    if (cnt) cnt.textContent = data.count;
+  }
+
+  function setChRow(lbl, data, prefix) {
+    if (!data) return;
+    var bar = document.getElementById(prefix + 'Bar');
+    var pct = document.getElementById(prefix + 'Pct');
+    var cnt = document.getElementById(prefix + 'Cnt');
+    if (bar) bar.style.width = data.pct + '%';
+    if (pct) pct.textContent = data.pct + '%';
+    if (cnt) cnt.textContent = data.count;
+  }
+
+  /* ── Sparkline ── */
+  function buildSparkline(data) {
+    var el = document.getElementById('sparkline');
+    el.innerHTML = '';
+    if (!data || data.length === 0) return;
+    var labels = ['6a','7a','8a','9a','10a','11a','12p','1p','2p','3p','4p','5p','6p','7p','8p','9p','10p'];
+    var max = Math.max.apply(null, data) || 1;
+    var now = new Date();
+    var currentHour = now.getHours();
+    for (var i = 0; i < data.length; i++) {
+      var realHour = 6 + i;
+      var bar = document.createElement('div');
+      bar.className = 'spark-bar';
+      if (realHour === currentHour) {
+        bar.classList.add('bar-current');
+      } else if (realHour > currentHour) {
+        bar.classList.add('bar-future');
+      } else {
+        bar.classList.add(i % 2 === 0 ? 'bar-blue' : 'bar-pink');
+      }
+      var pct = Math.max(data[i] / max * 100, 4);
+      bar.style.height = pct + '%';
+      bar.style.animationDelay = (i * 0.03) + 's';
+      bar.setAttribute('data-tip', (labels[i] || realHour) + ': ' + data[i] + ' orders');
+      el.appendChild(bar);
+    }
+  }
+
+  /* ── Station Health ── */
+  function renderStations(stations) {
+    var el = document.getElementById('stationList');
+    el.innerHTML = '';
+    if (!stations || stations.length === 0) {
+      el.innerHTML = '<div style="text-align:center;color:var(--gray-400);font-size:0.75rem;padding:12px;">No station data</div>';
+      return;
+    }
+    var nameMap = { 'hot_bar': 'Hot Bar', 'cold_bar': 'Cold Bar', 'food': 'Food Prep', 'Hot Bar': 'Hot Bar', 'Cold Bar': 'Cold Bar', 'Food Prep': 'Food Prep' };
+    var abbrMap = { 'Hot Bar': 'HB', 'Cold Bar': 'CB', 'Food Prep': 'FP' };
+    var types = { 'Hot Bar': 'hot', 'Cold Bar': 'cold', 'Food Prep': 'food' };
+    stations.forEach(function(s) {
+      var displayName = nameMap[s.station] || s.station;
+      var type = types[displayName] || 'hot';
+      var row = document.createElement('div');
+      row.className = 'station-row' + (s.status === 'overloaded' ? ' alert-red' : '');
+      row.innerHTML =
+        '<div class="station-icon ' + type + '">' + (abbrMap[displayName] || 'ST') + '</div>' +
+        '<div class="station-info">' +
+          '<div class="station-name-row">' +
+            '<span class="station-name">' + displayName + '</span>' +
+          '</div>' +
+          '<div class="station-bar-track"><div class="station-bar-fill ' + s.color + '" style="width:' + Math.min(s.capacity_pct, 150) / 1.5 + '%"></div></div>' +
+          '<div class="station-detail">' + s.orders_hr + ' orders/hr \u00b7 ' + fmtWait(s.avg_wait_secs) + ' wait</div>' +
+        '</div>' +
+        '<div class="station-stats">' +
+          '<div class="station-capacity ' + s.color + '">' + Math.round(s.capacity_pct) + '%</div>' +
+          '<div class="station-staff">' + s.staff_count + ' staff</div>' +
+        '</div>';
+      el.appendChild(row);
+    });
+  }
+
+  /* ── Staff Roster ── */
+  function renderStaff(staff) {
+    var el = document.getElementById('staffList');
+    var badge = document.getElementById('staffCountBadge');
+    el.innerHTML = '';
+    badge.textContent = staff ? staff.length : 0;
+    if (!staff || staff.length === 0) {
+      el.innerHTML = '<div style="text-align:center;color:var(--gray-400);font-size:0.75rem;padding:12px;">No staff data</div>';
+      return;
+    }
+    var staffNameMap = { 'hot_bar': 'Hot Bar', 'cold_bar': 'Cold Bar', 'food': 'Food Prep', 'Hot Bar': 'Hot Bar', 'Cold Bar': 'Cold Bar', 'Food Prep': 'Food Prep' };
+    var staffTypes = { 'Hot Bar': 'hot', 'Cold Bar': 'cold', 'Food Prep': 'food' };
+    staff.forEach(function(s) {
+      var stationDisplay = staffNameMap[s.station] || s.station;
+      var type = staffTypes[stationDisplay] || 'hot';
+      var row = document.createElement('div');
+      row.className = 'staff-row';
+      row.innerHTML =
+        '<div class="staff-avatar ' + type + '">' + s.name.charAt(0) + '</div>' +
+        '<div class="staff-name">' + s.name + '</div>' +
+        '<span class="staff-station-tag ' + type + '">' + stationDisplay + '</span>';
+      el.appendChild(row);
+    });
+  }
+
+  /* ── Mock dashboard for local testing ── */
+  function getMockDashboard() {
+    return {
+      kpis: { est_revenue: 2847, total_orders_today: 596, avg_ticket: 4.78,
+              orders_hr: 82, target_hr: 75, avg_wait_secs: 195, pace_pct: 109, active_orders: 14 },
+      order_mix: { hot: { pct: 52, count: 310 }, cold: { pct: 31, count: 185 }, food: { pct: 17, count: 101 } },
+      channel_split: { in_store: { pct: 64, count: 381 }, mobile: { pct: 36, count: 215 } },
+      hourly_volume: [30, 71, 102, 91, 61, 51, 71, 61, 51, 40, 51, 61, 51, 40, 30, 20, 10],
+      stations: [
+        { station: 'Hot Bar', status: 'ok', capacity_pct: 72, orders_hr: 45, avg_wait_secs: 145, staff_count: 3, color: 'green' },
+        { station: 'Cold Bar', status: 'overloaded', capacity_pct: 125, orders_hr: 38, avg_wait_secs: 280, staff_count: 2, color: 'red' },
+        { station: 'Food Prep', status: 'busy', capacity_pct: 88, orders_hr: 22, avg_wait_secs: 190, staff_count: 2, color: 'amber' }
+      ],
+      staff: [
+        { name: 'Emma Chen', station: 'Hot Bar' }, { name: 'James Wilson', station: 'Hot Bar' },
+        { name: 'Sarah Kim', station: 'Cold Bar' }, { name: 'Mike Torres', station: 'Cold Bar' },
+        { name: 'Lisa Park', station: 'Food Prep' }, { name: 'David Lee', station: 'Hot Bar' },
+        { name: 'Amy Zhang', station: 'Food Prep' }
+      ]
+    };
+  }
+
+  /* ================================================================
+     EVENTS
+     ================================================================ */
+  sendBtn.addEventListener('click', function() { sendMessage(msgInput.value); });
+  msgInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(msgInput.value); }
+  });
+  document.querySelectorAll('.quick-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (!isWaiting) sendMessage(btn.getAttribute('data-msg') || btn.textContent);
+    });
+  });
+
+  /* Profile dropdown */
+  var profileDD = document.getElementById('profileDropdown');
+  var profileBtn = document.getElementById('profileTrigger');
+  profileBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    profileDD.classList.toggle('open');
+  });
+  document.addEventListener('click', function(e) {
+    if (!profileDD.contains(e.target)) profileDD.classList.remove('open');
+  });
+
+  /* ================================================================
+     INIT
+     ================================================================ */
+  connect();
+  fetchDashboard();
+  /* Refresh dashboard every 30 seconds */
+  dashboardTimer = setInterval(fetchDashboard, 30000);
+  msgInput.focus();
+})();
+</script>
+
+</body>
+</html>

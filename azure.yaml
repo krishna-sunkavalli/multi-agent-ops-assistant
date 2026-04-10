@@ -1,0 +1,37 @@
+name: multi-agent-ops-assistant
+metadata:
+  template: multi-agent-ops-assistant
+
+infra:
+  provider: bicep
+  path: infra
+  module: main
+  resourceGroup: rg-${AZURE_ENV_NAME}
+
+services:
+  opsassistant:
+    host: containerapp
+    # DEFAULT: Pull pre-built image (no build required — fastest first deploy).
+    image: ghcr.io/krishna-sunkavalli/multi-agent-ops-assistant:latest
+    # CUSTOMIZING? Comment out 'image' above and uncomment below to build from source:
+    # project: .
+    # language: py
+    # docker:
+    #   path: Dockerfile
+    #   remoteBuild: true
+
+hooks:
+  preprovision:
+    windows:
+      shell: pwsh
+      run: hooks/preprovision.ps1
+    posix:
+      shell: sh
+      run: hooks/preprovision.sh
+  postprovision:
+    windows:
+      shell: pwsh
+      run: hooks/postprovision.ps1
+    posix:
+      shell: sh
+      run: hooks/postprovision.sh

@@ -1,0 +1,30 @@
+version: 2
+
+updates:
+  # GitHub Actions - grouped
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    target-branch: "dependabotchanges"
+    commit-message:
+      prefix: "build"
+    open-pull-requests-limit: 10
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  # Python (pip) dependencies - grouped
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    target-branch: "dependabotchanges"
+    commit-message:
+      prefix: "build"
+    open-pull-requests-limit: 10
+    groups:
+      python-deps:
+        patterns:
+          - "*"
